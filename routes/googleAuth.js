@@ -4,7 +4,13 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 
 const router = express.Router();
-const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+
+const client = new OAuth2Client(
+    process.env.GOOGLE_CLIENT_ID,
+    process.env.GOOGLE_CLIENT_SECRET,
+    process.env.GOOGLE_REDIRECT_URI
+  );
 
 // Initiate Google OAuth flow
 router.get('/google', (req, res) => {
@@ -17,8 +23,9 @@ router.get('/google', (req, res) => {
 
 // Google OAuth callback
 router.get('/google/callback', async (req, res) => {
+    const { code } = req.query;
   try {
-    const { tokens } = await client.getToken(req.query.code);
+    const { tokens } = await client.getToken(code);
     client.setCredentials(tokens);
 
     const ticket = await client.verifyIdToken({
@@ -27,7 +34,7 @@ router.get('/google/callback', async (req, res) => {
     });
 
     const payload = ticket.getPayload();
-    const { email, given_name, family_name } = payload;
+    const { email, given_name, family_name, sub } = payload;
 
     let user = await User.findOne({ email });
 
@@ -36,7 +43,7 @@ router.get('/google/callback', async (req, res) => {
         firstName: given_name,
         lastName: family_name,
         email,
-        googleId: payload.sub
+        googleId: sub
       });
       await user.save();
     }
@@ -47,7 +54,9 @@ router.get('/google/callback', async (req, res) => {
     res.redirect(`${process.env.FRONTEND_URL}/login?token=${token}`);
   } catch (error) {
     console.error('Google login error:', error);
-    res.status(500).json({ message: 'Google login failed' });
+    
+    const errorMessage = encodeURIComponent('Google login failed. Please try again.');
+    res.redirect(`${process.env.FRONTEND_URL}/login?error=${errorMessage}`);
   }
 });
 

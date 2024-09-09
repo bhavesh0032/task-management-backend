@@ -2,7 +2,24 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+// const { OAuth2Client } = require('google-auth-library')
 const router = express.Router();
+
+
+
+// const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// router.get('/google', (req, res) => {
+//   const redirectUrl = `${req.protocol}://${req.get('host')}/api/auth/google/callback`;
+  
+//   const url = client.generateAuthUrl({
+//     access_type: 'offline',
+//     scope: ['profile', 'email'],
+//     redirect_uri: redirectUrl
+//   });
+
+//   res.redirect(url);
+// });
 
 
 router.post('/register', async (req, res) => {
