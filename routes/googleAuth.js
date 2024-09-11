@@ -14,11 +14,11 @@ const client = new OAuth2Client(
 
 // Initiate Google OAuth flow
 router.get('/google', (req, res) => {
-  const url = client.generateAuthUrl({
-    access_type: ['offline', 'online'],
+  const authUrl = client.generateAuthUrl({
+    access_type: 'offline',
     scope: ['profile', 'email']
   });
-  res.redirect(url);
+  res.redirect(authUrl);
 });
 
 // Google OAuth callback
